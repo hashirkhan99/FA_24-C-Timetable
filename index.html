@@ -18,7 +18,7 @@
         }
 
         .overlay {
-            background-color: rgba(255, 255, 255, 0.4);
+            background-color: rgba(255, 255, 255, 0.8);
             padding: 20px;
             border-radius: 10px;
             max-width: 1200px;
@@ -35,6 +35,7 @@
             background-color: #f4f4f4;
             padding: 10px;
             border-radius: 5px;
+            margin-top: 20px;
         }
 
         table {
@@ -60,6 +61,10 @@
 
         .highlight {
             background-color: yellow !important;
+        }
+
+        .highlight-day {
+            background-color: #ffe599 !important;
         }
     </style>
 </head>
@@ -109,28 +114,34 @@
         function renderTimetable() {
             const timetableDiv = document.getElementById("timetable");
             const now = new Date();
+            const currentDayIndex = now.getDay();
             const currentTime = now.getHours() * 60 + now.getMinutes();
-            let foundNextLecture = false;
-            
+            const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+            const currentDay = daysOfWeek[currentDayIndex];
+
             let html = "";
             for (const [day, lectures] of Object.entries(schedule)) {
-                html += `<h2>${day}</h2><table><tr><th>Time</th><th>Subject</th><th>Teacher</th><th>Room</th></tr>`;
+                const highlightDayClass = day === currentDay ? "highlight-day" : "";
+                html += `<h2 class="${highlightDayClass}">${day}</h2><table><tr><th>Time</th><th>Subject</th><th>Teacher</th><th>Room</th></tr>`;
                 lectures.forEach(lecture => {
-                    let lectureTime = parseInt(lecture.time.split(':')[0]) * 60 + parseInt(lecture.time.split(':')[1]);
-                    let highlightClass = "";
-                    if (!foundNextLecture && lecture.subject !== "Free" && lectureTime >= currentTime) {
-                        highlightClass = "highlight";
-                        foundNextLecture = true;
-                    }
+                    const [start, end] = lecture.time.split(" - ").map(t => {
+                        const [hours, minutes] = t.split(":" ).map(Number);
+                        return hours * 60 + minutes;
+                    });
+
+                    const isNextLecture = day === currentDay && currentTime < end && currentTime >= start;
+                    const highlightClass = isNextLecture ? "highlight" : "";
+
                     html += `<tr class="${highlightClass}"><td>${lecture.time}</td><td>${lecture.subject}</td><td>${lecture.teacher || "-"}</td><td>${lecture.room || "-"}</td></tr>`;
                 });
                 html += "</table>";
             }
             timetableDiv.innerHTML = html;
         }
-        
+
         renderTimetable();
     </script>
 </body>
+
 </html>
 
