@@ -11,7 +11,7 @@
             line-height: 1.6;
             margin: 0;
             padding: 0;
-            background: url('Untitled-1.png') no-repeat center center fixed;
+            background: url('background.jpg') no-repeat center center fixed;
             background-size: cover;
             color: #333;
             position: relative;
@@ -66,6 +66,19 @@
         .highlight-day {
             background-color: #ffe599 !important;
         }
+
+        button {
+            padding: 5px 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
     </style>
 </head>
 
@@ -111,7 +124,31 @@
             ]
         };
 
+        function requestNotificationPermission() {
+            if (Notification.permission !== "granted") {
+                Notification.requestPermission();
+            }
+        }
+
+        function scheduleReminder(time, subject) {
+            const now = new Date();
+            const [hours, minutes] = time.split(':').map(Number);
+            const reminderTime = new Date();
+            reminderTime.setHours(hours, minutes, 0, 0);
+
+            const timeDifference = reminderTime - now;
+            if (timeDifference > 0) {
+                setTimeout(() => {
+                    new Notification(`Reminder: ${subject}`);
+                }, timeDifference);
+                alert(`Reminder set for ${subject} at ${time}`);
+            } else {
+                alert("The time for this lecture has already passed!");
+            }
+        }
+
         function renderTimetable() {
+            requestNotificationPermission();
             const timetableDiv = document.getElementById("timetable");
             const now = new Date();
             const currentDayIndex = now.getDay();
@@ -122,17 +159,26 @@
             let html = "";
             for (const [day, lectures] of Object.entries(schedule)) {
                 const highlightDayClass = day === currentDay ? "highlight-day" : "";
-                html += `<h2 class="${highlightDayClass}">${day}</h2><table><tr><th>Time</th><th>Subject</th><th>Teacher</th><th>Room</th></tr>`;
+                html += `<h2 class="${highlightDayClass}">${day}</h2><table><tr><th>Time</th><th>Subject</th><th>Teacher</th><th>Room</th><th>Reminder</th></tr>`;
                 lectures.forEach(lecture => {
                     const [start, end] = lecture.time.split(" - ").map(t => {
-                        const [hours, minutes] = t.split(":" ).map(Number);
+                        const [hours, minutes] = t.split(":").map(Number);
                         return hours * 60 + minutes;
                     });
 
-                    const isNextLecture = day === currentDay && currentTime < end && currentTime >= start;
+                    const isNextLecture = day === currentDay && currentTime < end && lecture.subject !== "Free" && lecture.subject !== "Break";
                     const highlightClass = isNextLecture ? "highlight" : "";
 
-                    html += `<tr class="${highlightClass}"><td>${lecture.time}</td><td>${lecture.subject}</td><td>${lecture.teacher || "-"}</td><td>${lecture.room || "-"}</td></tr>`;
+                    html += `<tr class="${highlightClass}"><td>${lecture.time}</td><td>${lecture.subject}</td><td>${lecture.teacher || "-"}</td><td>${lecture.room || "-"}</td><td>`;
+
+                    if (lecture.subject !== "Free" && lecture.subject !== "Break") {
+                        const startTime = lecture.time.split(" - ")[0];
+                        html += `<button onclick="scheduleReminder('${startTime}', '${lecture.subject}')">Set Reminder</button>`;
+                    } else {
+                        html += "-";
+                    }
+
+                    html += `</td></tr>`;
                 });
                 html += "</table>";
             }
@@ -144,4 +190,3 @@
 </body>
 
 </html>
-
