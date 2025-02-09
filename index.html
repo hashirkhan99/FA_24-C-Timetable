@@ -4,21 +4,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>University Timetable</title>
+    <title>Comsats University Timetable</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             line-height: 1.6;
             margin: 0;
             padding: 0;
-            background: url('COMSATS.png') no-repeat center center fixed;
+            background: url('background.jpg') no-repeat center center fixed;
             background-size: cover;
             color: #333;
             position: relative;
         }
 
         .overlay {
-            background-color: rgba(255, 255, 255, 0.3);
+            background-color: rgba(255, 255, 255, 0.4);
             padding: 20px;
             border-radius: 10px;
             max-width: 1200px;
@@ -67,7 +67,7 @@
 <body>
     <div class="overlay">
         <h1>Fa 24 _BCS-C</h1>
-        <h1>University Weekly Timetable</h1>
+        <h1>Comsats University Weekly Timetable</h1>
         <div id="timetable"></div>
     </div>
 
@@ -107,28 +107,30 @@
         };
 
         function renderTimetable() {
-            const now = new Date();
-            const today = Object.keys(schedule)[now.getDay() - 1] || "Monday";
-            const currentTime = now.getHours() * 60 + now.getMinutes();
             const timetableDiv = document.getElementById("timetable");
-            timetableDiv.innerHTML = "";
-
-            Object.keys(schedule).forEach(day => {
-                let section = `<div class='day-section'><h2>${day}</h2><table>`;
-                section += `<tr><th>Time</th><th>Subject</th><th>Teacher</th><th>Class</th></tr>`;
-                let highlighted = false;
-                schedule[day].forEach(lecture => {
-                    const lectureTime = parseInt(lecture.time.split(':')[0]) * 60 + parseInt(lecture.time.split(':')[1]);
-                    const highlightClass = (!highlighted && day === today && lectureTime >= currentTime && lecture.subject !== "Free" && lecture.subject !== "Break") ? "highlight" : "";
-                    if (highlightClass) highlighted = true;
-                    section += `<tr class='${highlightClass}'><td>${lecture.time}</td><td>${lecture.subject}</td><td>${lecture.teacher || "-"}</td><td>${lecture.room || "-"}</td></tr>`;
+            const now = new Date();
+            const currentTime = now.getHours() * 60 + now.getMinutes();
+            let foundNextLecture = false;
+            
+            let html = "";
+            for (const [day, lectures] of Object.entries(schedule)) {
+                html += `<h2>${day}</h2><table><tr><th>Time</th><th>Subject</th><th>Teacher</th><th>Room</th></tr>`;
+                lectures.forEach(lecture => {
+                    let lectureTime = parseInt(lecture.time.split(':')[0]) * 60 + parseInt(lecture.time.split(':')[1]);
+                    let highlightClass = "";
+                    if (!foundNextLecture && lecture.subject !== "Free" && lectureTime >= currentTime) {
+                        highlightClass = "highlight";
+                        foundNextLecture = true;
+                    }
+                    html += `<tr class="${highlightClass}"><td>${lecture.time}</td><td>${lecture.subject}</td><td>${lecture.teacher || "-"}</td><td>${lecture.room || "-"}</td></tr>`;
                 });
-                section += "</table></div>";
-                timetableDiv.innerHTML += section;
-            });
+                html += "</table>";
+            }
+            timetableDiv.innerHTML = html;
         }
-
+        
         renderTimetable();
     </script>
 </body>
 </html>
+
