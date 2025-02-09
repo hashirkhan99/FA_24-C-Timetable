@@ -18,7 +18,7 @@
         }
 
         .overlay {
-            background-color: rgba(255, 255, 255, 0.6); /* Lower opacity to 40% */
+            background-color: rgba(255, 255, 255, 0.6);
             padding: 20px;
             border-radius: 10px;
             max-width: 1200px;
@@ -31,10 +31,16 @@
             color: #444;
         }
 
+        h2 {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
+            margin: 10px 0;
         }
 
         th, td {
@@ -52,28 +58,77 @@
             background-color: #f9f9f9;
         }
 
-        tr:hover {
-            background-color: #f1f1f1;
+        .highlight {
+            background-color: yellow !important;
         }
     </style>
 </head>
 
 <body>
     <div class="overlay">
+        <h1>Fa 24 _BCS-C</h1>
         <h1>University Weekly Timetable</h1>
-        <table>
-            <thead>
-                <tr>
-                    <th>Day</th>
-                    <th>Time</th>
-                    <th>Subject</th>
-                    <th>Teacher</th>
-                    <th>Class</th>
-                </tr>
-            </thead>
-            <tbody>
-
-        </table>
+        <div id="timetable"></div>
     </div>
+
+    <script>
+        const schedule = {
+            "Monday": [
+                { time: "08:30 - 09:55", subject: "Free" },
+                { time: "09:55 - 12:45", subject: "Programming Fundamentals (Lab)", teacher: "CS Ms. Huma Nisar", room: "CLab-6" },
+                { time: "12:45 - 13:40", subject: "Break" },
+                { time: "13:40 - 15:05", subject: "Fundamentals of Digital Logic Design", teacher: "EE Mr. Khalid Majeed", room: "C1.3 (77)" },
+                { time: "15:05 - 16:30", subject: "Technical and Business Writing", teacher: "EE Mr. Shahzada Sufiyan", room: "C2.3 (48)" }
+            ],
+            "Tuesday": [
+                { time: "08:30 - 09:55", subject: "Civics and Community Engagement", teacher: "CS Ms. Maryam Mazhar", room: "C2.4 (77)" },
+                { time: "09:55 - 11:20", subject: "Programming Fundamentals", teacher: "CS Ms. Huma Nisar", room: "D4 (66)" },
+                { time: "11:20 - 16:30", subject: "Free" }
+            ],
+            "Wednesday": [
+                { time: "08:30 - 09:55", subject: "Programming Fundamentals", teacher: "CS Ms. Huma Nisar", room: "B14 (100)" },
+                { time: "09:55 - 11:20", subject: "Fundamentals of Digital Logic Design", teacher: "EE Mr. Khalid Majeed", room: "C1 (77)" },
+                { time: "11:20 - 15:05", subject: "Free" },
+                { time: "15:05 - 16:30", subject: "Pre-Calculus II", teacher: "SE Ms. Sana Nasir", room: "D1 (72)" }
+            ],
+            "Thursday": [
+                { time: "08:30 - 09:55", subject: "Pre-Calculus II", teacher: "SE Ms. Sana Nasir", room: "D9 (72)" },
+                { time: "09:55 - 11:20", subject: "Technical and Business Writing", teacher: "EE Mr. Shahzada Sufiyan", room: "B14 (100)" },
+                { time: "11:20 - 12:45", subject: "Discrete Structures", teacher: "SE Ms. Nosheen Ramzan", room: "B14 (100)" },
+                { time: "12:45 - 16:30", subject: "Free" }
+            ],
+            "Friday": [
+                { time: "08:30 - 09:55", subject: "Civics and Community Engagement", teacher: "CS Ms. Maryam Mazhar", room: "C1.1 (77)" },
+                { time: "09:55 - 12:45", subject: "Fundamentals of Digital Logic Design (Lab)", teacher: "EE Mr. Khalid Majeed", room: "DLD Lab" },
+                { time: "12:45 - 13:40", subject: "Break" },
+                { time: "13:40 - 15:05", subject: "Discrete Structures", teacher: "SE Ms. Nosheen Ramzan", room: "B12 (70)" },
+                { time: "15:05 - 16:30", subject: "Free" }
+            ]
+        };
+
+        function renderTimetable() {
+            const now = new Date();
+            const today = Object.keys(schedule)[now.getDay() - 1] || "Monday";
+            const currentTime = now.getHours() * 60 + now.getMinutes();
+            const timetableDiv = document.getElementById("timetable");
+            timetableDiv.innerHTML = "";
+
+            Object.keys(schedule).forEach(day => {
+                let section = `<div class='day-section'><h2>${day}</h2><table>`;
+                section += `<tr><th>Time</th><th>Subject</th><th>Teacher</th><th>Class</th></tr>`;
+                let highlighted = false;
+                schedule[day].forEach(lecture => {
+                    const lectureTime = parseInt(lecture.time.split(':')[0]) * 60 + parseInt(lecture.time.split(':')[1]);
+                    const highlightClass = (!highlighted && day === today && lectureTime >= currentTime && lecture.subject !== "Free" && lecture.subject !== "Break") ? "highlight" : "";
+                    if (highlightClass) highlighted = true;
+                    section += `<tr class='${highlightClass}'><td>${lecture.time}</td><td>${lecture.subject}</td><td>${lecture.teacher || "-"}</td><td>${lecture.room || "-"}</td></tr>`;
+                });
+                section += "</table></div>";
+                timetableDiv.innerHTML += section;
+            });
+        }
+
+        renderTimetable();
+    </script>
 </body>
 </html>
